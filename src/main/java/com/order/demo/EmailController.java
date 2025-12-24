@@ -15,7 +15,7 @@ public class EmailController {
     @Qualifier("emailService")
     @Autowired
     private EmailService emailService;
-    @PostMapping("/generateEmail")
+    @PostMapping("/generateEmail") 
     public Map<String, String> generateEmail(@RequestBody EmailRequest request) {
         String emailContent = emailService.generateEmail(
             request.getSituation(),
