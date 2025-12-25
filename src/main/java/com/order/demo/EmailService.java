@@ -6,10 +6,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.*;
 
 
 
@@ -24,6 +29,7 @@ public class EmailService {
     // @Qualifier("openAiRestTemplate")
     // @Autowired
     private final RestTemplate restTemplate = new RestTemplate();
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     public String generateEmail(String situation, String name, String orderId ) {
         Map<String , Object> requestBody = new HashMap<>();
         requestBody.put("model", "llama-3.3-70b-versatile");
@@ -51,12 +57,21 @@ public class EmailService {
             httpheaders.setContentType(MediaType.APPLICATION_JSON);
             httpheaders.setBearerAuth(openAiApiKey);
             HttpEntity<Map<String , Object>> entity = new HttpEntity<Map<String,Object>>(requestBody, httpheaders);
+            int inputChars= situation.length() + name.length() + orderId.length();
+            logger.info("invoking LLM : Input characters: " + inputChars);
             ResponseEntity<Map> response = restTemplate.postForEntity(apiURL, entity, Map.class);
             Map<String , Object> body = response.getBody();
               List<Map<String, Object>> choices = (List<Map<String, Object>>) body.get("choices");
             Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-            
-            return (String) message.get("content");
+            String outputContent= (String) message.get("content");
+            if(outputContent== null){
+                logger.error("LLM Response error: No content received.");
+                return "";
+            }
+            int outputChars = outputContent!= null ? outputContent.length() : 0;
+            int estimatedTokens = (inputChars + outputChars) / 4; // Rough estimate: 1 token ~ 4 characters
+            logger.info("LLM Response received: Output characters: " + outputChars + ", Estimated tokens used: " + estimatedTokens);
+            return outputContent;
 // ;        String prompt = "Generate a professional email for the following situation: " + situation +
 //                         ". The email should address the customer by name: " + name +
 //                         " and include the order ID: " + orderId + "."

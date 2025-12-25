@@ -15,12 +15,12 @@ public class EmailRequest {
     public void setSituation(String situation) {
         this.situation = situation;
     }
-    private String custId ;
-    public String getCustId() {
-        return custId;
+    private String orderId ;
+    public String getOrderId() {
+        return orderId;
     }
-    public void setCustId(String custId) {
-        this.custId = custId;
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
     
     

@@ -20,7 +20,7 @@ public class EmailController {
         String emailContent = emailService.generateEmail(
             request.getSituation(),
             request.getName(),
-            request.getCustId()
+            request.getOrderId()
         );
         return Map.of("emailContent", emailContent);
        }
